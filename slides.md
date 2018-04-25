@@ -1,5 +1,5 @@
 # Free and Libre Monads
-Nick Pollard
+NICK POLLARD
 
 # Welcome
 
@@ -9,4 +9,7 @@ Nick Pollard
 * @Nick_enGB
 
 # Free as in Beer
-* Something about Beer
+```haskell
+class (Monad m) => FreeMonad m where
+  interpret :: Monad n => m a -> n a
+```
