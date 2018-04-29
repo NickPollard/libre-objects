@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="generator" content="pandoc">
   <meta name="author" content="Nick Pollard">
-  <title>Free and Libre Monads</title>
+  <title>Free and Libre Objects</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
@@ -1422,7 +1422,7 @@ transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985); }
     <div class="slides">
 
 <section id="title-slide">
-  <h1 class="title">Free and Libre Monads</h1>
+  <h1 class="title">Free and Libre Objects</h1>
   <p class="author">Nick Pollard</p>
 </section>
 
@@ -1516,12 +1516,12 @@ transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985); }
 <a class="sourceLine" id="cb6-5" data-line-number="5"><span class="kw">instance</span> <span class="dt">FreeMonoid</span> [] <span class="kw">where</span></a>
 <a class="sourceLine" id="cb6-6" data-line-number="6">  define def <span class="fu">=</span> def return</a>
 <a class="sourceLine" id="cb6-7" data-line-number="7">  interpret <span class="fu">=</span> foldMap</a></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="ot">expr ::</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> (<span class="dt">Monoid</span> b <span class="ot">=&gt;</span> (<span class="dt">Bool</span> <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> b)</a>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="ot">expr ::</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> (<span class="dt">Monoid</span> b <span class="ot">=&gt;</span> (a <span class="ot">-&gt;</span> b) <span class="ot">-&gt;</span> b)</a>
 <a class="sourceLine" id="cb7-2" data-line-number="2">expr this that <span class="fu">=</span> \lift <span class="ot">-&gt;</span></a>
 <a class="sourceLine" id="cb7-3" data-line-number="3">  lift this <span class="fu">&lt;&gt;</span> lift that <span class="fu">&lt;&gt;</span> lift that <span class="fu">&lt;&gt;</span> mempty</a>
 <a class="sourceLine" id="cb7-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb7-5" data-line-number="5"><span class="ot">program ::</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> <span class="dt">Bool</span> <span class="ot">-&gt;</span> [<span class="dt">Bool</span>]</a>
-<a class="sourceLine" id="cb7-6" data-line-number="6">program this that <span class="fu">=</span> define <span class="fu">$</span> program this that</a></code></pre></div>
+<a class="sourceLine" id="cb7-5" data-line-number="5"><span class="ot">list ::</span> a <span class="ot">-&gt;</span> a <span class="ot">-&gt;</span> [a]</a>
+<a class="sourceLine" id="cb7-6" data-line-number="6">list this that <span class="fu">=</span> define <span class="fu">$</span> expr this that</a></code></pre></div>
 </section>
 <section class="slide level2">
 
@@ -1552,12 +1552,12 @@ transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985); }
 </section>
 <section class="slide level2">
 
-<h3 id="a-simple-expression-language">A Simple expression language</h3>
-<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="kw">data</span> <span class="dt">WithResource</span> a <span class="kw">where</span></a>
-<a class="sourceLine" id="cb9-2" data-line-number="2">  <span class="dt">ReadFile</span><span class="ot"> ::</span> FilePath <span class="ot">-&gt;</span> <span class="dt">WithResource</span> <span class="dt">String</span></a>
-<a class="sourceLine" id="cb9-3" data-line-number="3">  <span class="dt">ReadEnv</span><span class="ot"> ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">WithResource</span> <span class="dt">String</span></a>
+<h3 id="a-simple-expression-language">A Simple Expression Language</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb9-1" data-line-number="1"><span class="kw">data</span> <span class="dt">ReadResource</span> a <span class="kw">where</span></a>
+<a class="sourceLine" id="cb9-2" data-line-number="2">  <span class="dt">ReadFile</span><span class="ot"> ::</span> FilePath <span class="ot">-&gt;</span> <span class="dt">ReadResource</span> <span class="dt">String</span></a>
+<a class="sourceLine" id="cb9-3" data-line-number="3">  <span class="dt">ReadEnv</span><span class="ot"> ::</span> <span class="dt">String</span> <span class="ot">-&gt;</span> <span class="dt">ReadResource</span> <span class="dt">String</span></a>
 <a class="sourceLine" id="cb9-4" data-line-number="4"></a>
-<a class="sourceLine" id="cb9-5" data-line-number="5"><span class="kw">type</span> <span class="dt">Resource</span> a <span class="fu">=</span> <span class="dt">Ap</span> <span class="dt">WithResource</span> a <span class="co">-- Ap is the Free Applicative</span></a>
+<a class="sourceLine" id="cb9-5" data-line-number="5"><span class="kw">type</span> <span class="dt">Resource</span> a <span class="fu">=</span> <span class="dt">Ap</span> <span class="dt">ReadResource</span> a <span class="co">-- Ap is the Free Applicative</span></a>
 <a class="sourceLine" id="cb9-6" data-line-number="6"></a>
 <a class="sourceLine" id="cb9-7" data-line-number="7">loadFile <span class="fu">=</span> liftAp <span class="fu">.</span> <span class="dt">ReadFile</span></a>
 <a class="sourceLine" id="cb9-8" data-line-number="8">loadEnv <span class="fu">=</span> liftAp <span class="fu">.</span> <span class="dt">ReadEnv</span></a>
@@ -1577,8 +1577,8 @@ transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985); }
 </ul>
 <div class="sourceCode" id="cb10"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb10-1" data-line-number="1"><span class="ot">run ::</span> <span class="dt">Resource</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a</a>
 <a class="sourceLine" id="cb10-2" data-line-number="2">run <span class="fu">=</span> runAp exec</a>
-<a class="sourceLine" id="cb10-3" data-line-number="3">  <span class="kw">where</span><span class="ot"> exec ::</span> <span class="dt">WithResource</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a</a>
-<a class="sourceLine" id="cb10-4" data-line-number="4">        exec (<span class="dt">ReadFile</span> f) <span class="fu">=</span> P.readFile f</a>
+<a class="sourceLine" id="cb10-3" data-line-number="3">  <span class="kw">where</span><span class="ot"> exec ::</span> <span class="dt">ReadResource</span> a <span class="ot">-&gt;</span> <span class="dt">IO</span> a</a>
+<a class="sourceLine" id="cb10-4" data-line-number="4">        exec (<span class="dt">ReadFile</span> f) <span class="fu">=</span> readFile f</a>
 <a class="sourceLine" id="cb10-5" data-line-number="5">        exec (<span class="dt">ReadEnv</span> f) <span class="fu">=</span> getEnv f</a></code></pre></div>
 </section>
 <section class="slide level2">
@@ -1588,13 +1588,13 @@ transition: width 800ms cubic-bezier(0.26, 0.86, 0.44, 0.985); }
 </ul>
 <div class="sourceCode" id="cb11"><pre class="sourceCode haskell"><code class="sourceCode haskell"><a class="sourceLine" id="cb11-1" data-line-number="1"><span class="ot">files ::</span> <span class="dt">Resource</span> a <span class="ot">-&gt;</span> [FilePath]</a>
 <a class="sourceLine" id="cb11-2" data-line-number="2">files prg <span class="fu">=</span> getConst <span class="fu">$</span> runAp inputFiles prg</a>
-<a class="sourceLine" id="cb11-3" data-line-number="3">  <span class="kw">where</span><span class="ot"> inputFiles ::</span> <span class="dt">WithResource</span> a <span class="ot">-&gt;</span> <span class="dt">Const</span> [FilePath] a</a>
+<a class="sourceLine" id="cb11-3" data-line-number="3">  <span class="kw">where</span><span class="ot"> inputFiles ::</span> <span class="dt">ReadResource</span> a <span class="ot">-&gt;</span> <span class="dt">Const</span> [FilePath] a</a>
 <a class="sourceLine" id="cb11-4" data-line-number="4">        inputFiles (<span class="dt">ReadFile</span> file) <span class="fu">=</span> <span class="dt">Const</span> [file]</a>
 <a class="sourceLine" id="cb11-5" data-line-number="5">        inputFiles _ <span class="fu">=</span> <span class="dt">Const</span> []</a>
 <a class="sourceLine" id="cb11-6" data-line-number="6"></a>
 <a class="sourceLine" id="cb11-7" data-line-number="7"><span class="ot">vars ::</span> <span class="dt">Resource</span> a <span class="ot">-&gt;</span> [<span class="dt">String</span>]</a>
 <a class="sourceLine" id="cb11-8" data-line-number="8">vars prg <span class="fu">=</span> getConst <span class="fu">$</span> runAp envVars prg</a>
-<a class="sourceLine" id="cb11-9" data-line-number="9">  <span class="kw">where</span><span class="ot"> envVars ::</span> <span class="dt">WithResource</span> a <span class="ot">-&gt;</span> <span class="dt">Const</span> [<span class="dt">String</span>] a</a>
+<a class="sourceLine" id="cb11-9" data-line-number="9">  <span class="kw">where</span><span class="ot"> envVars ::</span> <span class="dt">ReadResource</span> a <span class="ot">-&gt;</span> <span class="dt">Const</span> [<span class="dt">String</span>] a</a>
 <a class="sourceLine" id="cb11-10" data-line-number="10">        envVars (<span class="dt">ReadEnv</span> var) <span class="fu">=</span> <span class="dt">Const</span> [var]</a>
 <a class="sourceLine" id="cb11-11" data-line-number="11">        envVars _ <span class="fu">=</span> <span class="dt">Const</span> []</a></code></pre></div>
 </section>

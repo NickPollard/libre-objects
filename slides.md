@@ -1,5 +1,5 @@
 ---
-title: Free and Libre Monads
+title: Free and Libre Objects
 author: Nick Pollard
 ---
 
@@ -102,12 +102,12 @@ instance FreeMonoid [] where
 ```
 
 ```haskell
-expr :: Bool -> Bool -> (Monoid b => (Bool -> b) -> b)
+expr :: a -> a -> (Monoid b => (a -> b) -> b)
 expr this that = \lift ->
   lift this <> lift that <> lift that <> mempty
 
-program :: Bool -> Bool -> [Bool]
-program this that = define $ program this that
+list :: a -> a -> [a]
+list this that = define $ expr this that
 ```
 
 ----
@@ -137,14 +137,14 @@ iso ma = define $ flip interpret ma
 
 ----
 
-### A Simple expression language
+### A Simple Expression Language
 
 ```haskell
-data WithResource a where
-  ReadFile :: FilePath -> WithResource String
-  ReadEnv :: String -> WithResource String
+data ReadResource a where
+  ReadFile :: FilePath -> ReadResource String
+  ReadEnv :: String -> ReadResource String
 
-type Resource a = Ap WithResource a -- Ap is the Free Applicative
+type Resource a = Ap ReadResource a -- Ap is the Free Applicative
 
 loadFile = liftAp . ReadFile
 loadEnv = liftAp . ReadEnv
@@ -164,8 +164,8 @@ resource = Foo
 ```haskell
 run :: Resource a -> IO a
 run = runAp exec
-  where exec :: WithResource a -> IO a
-        exec (ReadFile f) = P.readFile f
+  where exec :: ReadResource a -> IO a
+        exec (ReadFile f) = readFile f
         exec (ReadEnv f) = getEnv f
 ```
 ----
@@ -174,13 +174,13 @@ run = runAp exec
 ```haskell
 files :: Resource a -> [FilePath]
 files prg = getConst $ runAp inputFiles prg
-  where inputFiles :: WithResource a -> Const [FilePath] a
+  where inputFiles :: ReadResource a -> Const [FilePath] a
         inputFiles (ReadFile file) = Const [file]
         inputFiles _ = Const []
 
 vars :: Resource a -> [String]
 vars prg = getConst $ runAp envVars prg
-  where envVars :: WithResource a -> Const [String] a
+  where envVars :: ReadResource a -> Const [String] a
         envVars (ReadEnv var) = Const [var]
         envVars _ = Const []
 ```
